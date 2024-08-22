@@ -62,9 +62,17 @@
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
 
-        // 대화 내역을 저장하는 배열 (localStorage에서 불러오기)
+        // 페이지가 처음 로드될 때 기존 대화 내역 불러오기
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
 
+        // 대화 내역이 있을 경우, 화면에 표시하기
+        function loadChatHistory() {
+            chatHistory.forEach(chat => {
+                addMessage(chat.sender, chat.message);
+            });
+        }
+
+        // 메시지를 채팅창에 추가하는 함수
         function addMessage(sender, message) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
@@ -73,27 +81,28 @@
             chatbox.appendChild(messageElement);
             chatbox.scrollTop = chatbox.scrollHeight;
 
-            // 대화 내역 저장
+            // 대화 내역을 로컬 스토리지에 저장
             chatHistory.push({ sender, message });
             localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
         }
 
+        // 메시지를 서버에 보내는 함수
         async function sendMessage() {
             const message = userInput.value.trim();
-            const userId = "user123"; // 사용자 ID (고정값 또는 동적으로 설정 가능)
+            const userId = "user123"; // 사용자 ID는 필요에 따라 동적으로 설정 가능
 
             if (message) {
                 addMessage('You', message);
                 userInput.value = '';
 
                 try {
-                    const response = await fetch('https://95d0-106-249-0-85.ngrok-free.app/chat', { // 최신 ngrok URL
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message: message, user_id: userId }),
-});
+                    const response = await fetch('https://e885-106-249-0-85.ngrok-free.app/chat', {  // 새로운 ngrok URL 반영
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: message, user_id: userId }),
+                    });
 
                     if (response.ok) {
                         const data = await response.json();
@@ -107,17 +116,13 @@
             }
         }
 
-        // 페이지 로드 시 기존 대화 내역 불러오기
-        function loadChatHistory() {
-            chatHistory.forEach(chat => {
-                addMessage(chat.sender, chat.message);
-            });
-        }
-
         // 페이지 로드 시 대화 내역 복원
         loadChatHistory();
 
+        // 전송 버튼 클릭 시 메시지 전송
         sendButton.addEventListener('click', sendMessage);
+
+        // 엔터키 입력 시 메시지 전송
         userInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
